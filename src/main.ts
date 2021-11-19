@@ -22,6 +22,16 @@ workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+			for (let x = 0; x < updateData.cells.length; x++) {
+				for (let y = 0; y < updateData.cells[x].length; y++) {
+					if (updateData.cells[x][y] < 1) continue;
+					ctx.beginPath();
+					ctx.rect(x, y, 1, 1);
+					ctx.fillStyle = `green`;
+					ctx.fill();
+				}
+			}
+
 			updateData.balls.forEach((ball) => {
 				ctx.beginPath();
 				ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);

@@ -35,6 +35,12 @@ export class Grid {
 			ball.calculateNextPosition(this.width, this.height);
 		});
 
+		for (let x = 0; x < this.cells.length; x++) {
+			for (let y = 0; y < this.cells[x].length; y++) {
+				this.cells[x][y] = this.calculateCellValue(x, y);
+			}
+		}
+
 		return { cells: this.cells, balls: this.balls };
 	};
 
