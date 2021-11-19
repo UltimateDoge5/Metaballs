@@ -1,37 +1,27 @@
 export class Ball {
-	private _x: number;
-	private _y: number;
-	private _radius: number;
-	private _vX: number;
-	private _vY: number;
+	x: number;
+	y: number;
+	radius: number;
+	private vX: number;
+	private vY: number;
 
 	constructor(x: number, y: number, radius: number, vX: number, vY: number) {
-		this._x = x;
-		this._y = y;
-		this._radius = radius;
-		this._vX = vX;
-		this._vY = vY;
+		this.x = x;
+		this.y = y;
+		this.radius = radius;
+		this.vX = vX;
+		this.vY = vY;
 	}
 
-	public draw(ctx: CanvasRenderingContext2D): void {
-		ctx.beginPath();
-		ctx.arc(this._x, this._y, this._radius, 0, Math.PI * 2);
-		ctx.fillStyle = "red";
-		ctx.fill();
-		ctx.closePath();
-	}
+	calculateNextPosition = (width: number, height: number) => {
+		this.x += this.vX;
+		this.y += this.vY;
 
-	calculateNextPosition = (width: number, height: number): number[] => {
-		this._x += this._vX;
-		this._y += this._vY;
-
-		if (this._x + this._radius > width || this._x - this._radius < 0) {
-			this._vX = -this._vX;
+		if (this.x + this.radius > width || this.x - this.radius < 0) {
+			this.vX = -this.vX;
 		}
-		if (this._y + this._radius > height || this._y - this._radius < 0) {
-			this._vY = -this._vY;
+		if (this.y + this.radius > height || this.y - this.radius < 0) {
+			this.vY = -this.vY;
 		}
-
-		return [this._x, this._y];
 	};
 }

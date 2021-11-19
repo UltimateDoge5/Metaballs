@@ -4,13 +4,12 @@ export class Grid {
 	width: number;
 	height: number;
 	balls: Ball[];
-	ctx: CanvasRenderingContext2D;
+	cells: number[][] = [];
 
-	constructor(width: number, height: number, ctx: CanvasRenderingContext2D) {
+	constructor(width: number, height: number) {
 		this.width = width;
 		this.height = height;
 		this.balls = [];
-		this.ctx = ctx;
 
 		for (let i = 0; i < getRandomInt(7, 15); i++) {
 			const ballRadius = getRandomInt(10, 35);
@@ -18,22 +17,34 @@ export class Grid {
 				getRandomInt(ballRadius, this.width),
 				getRandomInt(ballRadius, this.height),
 				ballRadius,
-				Math.max(Math.random() * 1.5, 0.25),
-				Math.max(Math.random() * 1.5, 0.25)
+				getRandomInt(1, 3) * (Math.random() > 0.5 ? 1 : -1),
+				getRandomInt(1, 3) * (Math.random() > 0.5 ? 1 : -1)
 			);
 		}
 
-		window.requestAnimationFrame(this.draw);
+		for (let x = 0; x < this.width; x++) {
+			this.cells[x] = [];
+			for (let y = 0; y < this.height; y++) {
+				this.cells[x][y] = 0;
+			}
+		}
 	}
 
-	draw = () => {
-		this.ctx.clearRect(0, 0, this.width, this.height);
+	frameUpdate = () => {
 		this.balls.forEach((ball) => {
 			ball.calculateNextPosition(this.width, this.height);
-			ball.draw(this.ctx);
 		});
 
-		requestAnimationFrame(this.draw);
+		return { cells: this.cells, balls: this.balls };
+	};
+
+	calculateCellValue = (x: number, y: number): number => {
+		let value = 0;
+		this.balls.forEach((ball) => {
+			const distance = Math.sqrt(Math.pow(x - ball.x, 2) + Math.pow(y - ball.y, 2));
+			value += ball.radius / distance;
+		});
+		return value;
 	};
 }
 
@@ -42,3 +53,7 @@ const getRandomInt = (min: number, max: number) => {
 	max = Math.floor(max);
 	return Math.floor(Math.random() * (max - min) + min);
 };
+
+// const lerp = (a: number, b: number, t: number) => {
+// 	return (1 - t) * a + t * b;
+// };
