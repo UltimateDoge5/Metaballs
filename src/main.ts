@@ -1,19 +1,19 @@
-import { Cell } from "./classes/cell";
 import "./styles/style.css";
 import { FrameData, MessageData } from "./vite-env";
 
 const canvas = document.querySelector("canvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 const frames: number[] = [];
+const cellSize = 30;
 
-canvas.width = Math.floor(window.innerWidth);
-canvas.height = Math.floor(window.innerHeight);
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
 import gridWorker from "./worker?worker";
 
 const workerInstance = new gridWorker();
 
-workerInstance.postMessage({ event: "init", data: { width: canvas.width, height: canvas.height, cellSize: 10 } });
+workerInstance.postMessage({ event: "init", data: { width: canvas.width, height: canvas.height, cellSize } });
 
 workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 	const MessageData = message.data;
@@ -23,28 +23,53 @@ workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 			const updateData: FrameData = JSON.parse(MessageData.data);
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+			//Draw the grid
+			ctx.strokeStyle = "rgb(0,0,0,0.25)";
+
+			ctx.beginPath();
 			for (let x = 0; x < updateData.cells.length; x++) {
 				for (let y = 0; y < updateData.cells[x].length; y++) {
-					const cell: Cell = updateData.cells[x][y];
-					if (cell.value < 1) continue;
+					ctx.rect(x * cellSize, y * cellSize, cellSize, cellSize);
+				}
+			}
+			ctx.stroke();
 
+			for (let x = 0; x < updateData.cells.length; x++) {
+				for (let y = 0; y < updateData.cells[x].length; y++) {
+					ctx.fillStyle = updateData.cells[x][y] >= 1 ? "green" : "black";
 					ctx.beginPath();
-					ctx.rect(x * cell.size, y * cell.size, cell.size, cell.size);
-					ctx.fillStyle = "green";
+
+					ctx.arc(x * cellSize, y * cellSize, 5, 0, Math.PI * 2);
+					// ctx.stroke();
 					ctx.fill();
 				}
 			}
 
+			// ctx.beginPath();
+			// for (let x = 0; x < updateData.cells.length; x++) {
+			// 	for (let y = 0; y < updateData.cells[x].length; y++) {
+			// 		const cell: Cell = updateData.cells[x][y];
+			// 		if (cell.value < 1) continue;
+
+			// 		ctx.rect(x * cell.size, y * cell.size, cell.size, cell.size);
+			// 		ctx.fillStyle = "green";
+			// 	}
+			// }
+			// ctx.fill();
+
+			//Draw the balls
+			ctx.strokeStyle = "red";
 			updateData.balls.forEach((ball) => {
 				ctx.beginPath();
 				ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-				ctx.strokeStyle = "red";
 				ctx.stroke();
 			});
 
+			//Calculate FPS
 			while (frames.length > 0 && frames[0] <= updateData.calcBegin - 1000) {
 				frames.shift();
 			}
+
 			frames.push(updateData.calcBegin);
 
 			ctx.strokeText(`${frames.length} FPS`, canvas.width - 36, 10);

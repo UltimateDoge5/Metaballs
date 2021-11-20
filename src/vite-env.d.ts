@@ -1,7 +1,6 @@
 /// <reference types="vite/client" />
 
 import { Ball } from "./classes/ball";
-import { Cell } from "./classes/cell";
 
 type Events = "init" | "frameUpdate";
 
@@ -11,7 +10,7 @@ interface MessageData {
 }
 
 interface FrameData {
-	cells: Cell[][];
+	cells: number[][];
 	balls: Ball[];
 	calcBegin: number;
 }

@@ -1,11 +1,10 @@
 import { Ball } from "./ball";
-import { Cell } from "./cell";
 
 export class Grid {
 	width: number;
 	height: number;
 	balls: Ball[];
-	cells: Cell[][] = [];
+	cells: number[][] = [];
 	cellSize: number;
 
 	constructor(width: number, height: number, cellSize: number) {
@@ -15,7 +14,7 @@ export class Grid {
 		this.balls = [];
 
 		for (let i = 0; i < getRandomInt(7, 15); i++) {
-			const ballRadius = getRandomInt(10, 35);
+			const ballRadius = getRandomInt(20, 35);
 			this.balls[i] = new Ball(
 				getRandomInt(ballRadius, this.width),
 				getRandomInt(ballRadius, this.height),
@@ -25,10 +24,10 @@ export class Grid {
 			);
 		}
 
-		for (let x = 0; x < this.width / this.cellSize; x++) {
+		for (let x = 0; x < Math.round(this.width / this.cellSize); x++) {
 			this.cells[x] = [];
-			for (let y = 0; y < this.height / this.cellSize; y++) {
-				this.cells[x][y] = new Cell(x, y, this.cellSize);
+			for (let y = 0; y < Math.round(this.height / this.cellSize); y++) {
+				this.cells[x][y] = 0;
 			}
 		}
 	}
@@ -42,7 +41,7 @@ export class Grid {
 
 		for (let x = 0; x < this.cells.length; x++) {
 			for (let y = 0; y < this.cells[x].length; y++) {
-				this.cells[x][y].value = this.calculateCellValue(x, y);
+				this.cells[x][y] = this.calculateCellValue(x, y);
 			}
 		}
 
