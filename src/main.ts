@@ -1,17 +1,18 @@
+import { Cell } from "./classes/cell";
 import "./styles/style.css";
 import { FrameData, MessageData } from "./vite-env";
 
 const canvas = document.querySelector("canvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
-canvas.width = Math.floor(window.innerWidth / 2);
-canvas.height = Math.floor(window.innerHeight / 2);
+canvas.width = Math.floor(window.innerWidth);
+canvas.height = Math.floor(window.innerHeight);
 
 import gridWorker from "./worker?worker";
 
 const workerInstance = new gridWorker();
 
-workerInstance.postMessage({ event: "init", data: { width: canvas.width, height: canvas.height } });
+workerInstance.postMessage({ event: "init", data: { width: canvas.width, height: canvas.height, cellSize: 10 } });
 
 workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 	const MessageData = message.data;
@@ -24,10 +25,12 @@ workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 
 			for (let x = 0; x < updateData.cells.length; x++) {
 				for (let y = 0; y < updateData.cells[x].length; y++) {
-					if (updateData.cells[x][y] < 1) continue;
+					const cell: Cell = updateData.cells[x][y];
+					if (cell.value < 1) continue;
+
 					ctx.beginPath();
-					ctx.rect(x, y, 1, 1);
-					ctx.fillStyle = `green`;
+					ctx.rect(x * cell.size, y * cell.size, cell.size, cell.size);
+					ctx.fillStyle = "green";
 					ctx.fill();
 				}
 			}

@@ -8,7 +8,7 @@ self.onmessage = (message: MessageEvent<MessageData>) => {
 
 	switch (messageData.event) {
 		case "init":
-			gridInstance = new Grid(messageData.data.width, messageData.data.height);
+			gridInstance = new Grid(messageData.data.width, messageData.data.height, messageData.data.cellSize);
 			break;
 		case "frameUpdate":
 			const updateData = gridInstance.frameUpdate();

@@ -1,14 +1,17 @@
 import { Ball } from "./ball";
+import { Cell } from "./cell";
 
 export class Grid {
 	width: number;
 	height: number;
 	balls: Ball[];
-	cells: number[][] = [];
+	cells: Cell[][] = [];
+	cellSize: number;
 
-	constructor(width: number, height: number) {
+	constructor(width: number, height: number, cellSize: number) {
 		this.width = width;
 		this.height = height;
+		this.cellSize = cellSize;
 		this.balls = [];
 
 		for (let i = 0; i < getRandomInt(7, 15); i++) {
@@ -22,10 +25,10 @@ export class Grid {
 			);
 		}
 
-		for (let x = 0; x < this.width; x++) {
+		for (let x = 0; x < this.width / this.cellSize; x++) {
 			this.cells[x] = [];
-			for (let y = 0; y < this.height; y++) {
-				this.cells[x][y] = 0;
+			for (let y = 0; y < this.height / this.cellSize; y++) {
+				this.cells[x][y] = new Cell(x, y, this.cellSize);
 			}
 		}
 	}
@@ -37,7 +40,7 @@ export class Grid {
 
 		for (let x = 0; x < this.cells.length; x++) {
 			for (let y = 0; y < this.cells[x].length; y++) {
-				this.cells[x][y] = this.calculateCellValue(x, y);
+				this.cells[x][y].value = this.calculateCellValue(x, y);
 			}
 		}
 
@@ -47,7 +50,7 @@ export class Grid {
 	calculateCellValue = (x: number, y: number): number => {
 		let value = 0;
 		this.balls.forEach((ball) => {
-			const distance = Math.sqrt(Math.pow(x - ball.x, 2) + Math.pow(y - ball.y, 2));
+			const distance = Math.sqrt(Math.pow(x * this.cellSize - ball.x, 2) + Math.pow(y * this.cellSize - ball.y, 2));
 			value += ball.radius / distance;
 		});
 		return value;
