@@ -13,4 +13,5 @@ interface MessageData {
 interface FrameData {
 	cells: Cell[][];
 	balls: Ball[];
+	calcBegin: number;
 }

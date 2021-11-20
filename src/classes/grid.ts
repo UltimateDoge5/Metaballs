@@ -34,6 +34,8 @@ export class Grid {
 	}
 
 	frameUpdate = () => {
+		const timestamp = performance.now();
+
 		this.balls.forEach((ball) => {
 			ball.calculateNextPosition(this.width, this.height);
 		});
@@ -44,7 +46,7 @@ export class Grid {
 			}
 		}
 
-		return { cells: this.cells, balls: this.balls };
+		return { cells: this.cells, balls: this.balls, calcBegin: timestamp };
 	};
 
 	calculateCellValue = (x: number, y: number): number => {

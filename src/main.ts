@@ -4,6 +4,7 @@ import { FrameData, MessageData } from "./vite-env";
 
 const canvas = document.querySelector("canvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+const frames: number[] = [];
 
 canvas.width = Math.floor(window.innerWidth);
 canvas.height = Math.floor(window.innerHeight);
@@ -20,7 +21,6 @@ workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 	switch (MessageData.event) {
 		case "frameUpdate":
 			const updateData: FrameData = JSON.parse(MessageData.data);
-
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 			for (let x = 0; x < updateData.cells.length; x++) {
@@ -41,6 +41,14 @@ workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 				ctx.strokeStyle = "red";
 				ctx.stroke();
 			});
+
+			while (frames.length > 0 && frames[0] <= updateData.calcBegin - 1000) {
+				frames.shift();
+			}
+			frames.push(updateData.calcBegin);
+
+			ctx.strokeText(`${frames.length} FPS`, canvas.width - 36, 10);
+			ctx.stroke();
 
 			requestAnimationFrame(() => {
 				workerInstance.postMessage({ event: "frameUpdate" });
