@@ -50,14 +50,23 @@ workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 
 			for (let x = 0; x < updateData.states.length; x++) {
 				for (let y = 0; y < updateData.states[x].length; y++) {
+					const lerp = (x0: number, x1: number, y0: number, y1: number) => {
+						return y0 + ((y1 - y0) * (1 - x0)) / (x1 - x0);
+					};
+
 					const state = updateData.states[x][y];
 
 					// ctx.strokeText(state.toString(), x * cellSize + cellSize / 2, y * cellSize + cellSize / 2);
 
-					const top = [x * cellSize + cellSize / 2, y * cellSize];
-					const right = [(x + 1) * cellSize, y * cellSize + cellSize / 2];
-					const bottom = [x * cellSize + cellSize / 2, (y + 1) * cellSize];
-					const left = [x * cellSize, y * cellSize + cellSize / 2];
+					const topLerp = lerp(updateData.cells[x][y], updateData.cells[x + 1][y], 0, 1);
+					const rightLerp = lerp(updateData.cells[x + 1][y], updateData.cells[x + 1][y + 1], 0, 1);
+					const bottomLerp = lerp(updateData.cells[x][y + 1], updateData.cells[x + 1][y + 1], 0, 1);
+					const leftLerp = lerp(updateData.cells[x][y], updateData.cells[x][y + 1], 0, 1);
+
+					const top = [(x + topLerp) * cellSize, y * cellSize];
+					const right = [(x + 1) * cellSize, (y + rightLerp) * cellSize];
+					const bottom = [(x + bottomLerp) * cellSize, (y + 1) * cellSize];
+					const left = [x * cellSize, (y + leftLerp) * cellSize];
 
 					switch (state) {
 						case 0:
