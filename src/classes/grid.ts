@@ -74,6 +74,34 @@ export class Grid {
 
 		return corners[0] * 8 + corners[1] * 4 + corners[2] * 2 + corners[3];
 	};
+
+	resize(width: number, height: number) {
+		const diffX = width - this.width;
+		const diffY = height - this.height;
+
+		this.width = width;
+		this.height = height;
+
+		for (let x = 0; x < Math.round(this.width / this.cellSize) + 1; x++) {
+			this.cells[x] = [];
+			for (let y = 0; y < Math.round(this.height / this.cellSize) + 1; y++) {
+				this.cells[x][y] = 0;
+			}
+		}
+
+		for (const ball of this.balls) {
+			ball.x += diffX;
+			ball.y += diffY;
+
+			if (ball.x < 0) {
+				ball.x = 0;
+			}
+
+			if (ball.y < 0) {
+				ball.y = 0;
+			}
+		}
+	}
 }
 
 const getRandomInt = (min: number, max: number) => {

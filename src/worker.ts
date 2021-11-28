@@ -14,5 +14,8 @@ self.onmessage = (message: MessageEvent<MessageData>) => {
 			const updateData = gridInstance.frameUpdate();
 			self.postMessage({ event: "frameUpdate", data: JSON.stringify(updateData) });
 			break;
+		case "resize":
+			gridInstance.resize(messageData.data.width, messageData.data.height);
+			break;
 	}
 };

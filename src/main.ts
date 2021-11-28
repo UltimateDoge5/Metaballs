@@ -144,3 +144,10 @@ workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 requestAnimationFrame(() => {
 	workerInstance.postMessage({ event: "frameUpdate" });
 });
+
+window.addEventListener("resize", () => {
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
+
+	workerInstance.postMessage({ event: "resize", data: { width: canvas.width, height: canvas.height } });
+});
