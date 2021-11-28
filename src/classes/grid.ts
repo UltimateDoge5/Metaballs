@@ -13,7 +13,7 @@ export class Grid {
 		this.cellSize = cellSize;
 		this.balls = [];
 
-		for (let i = 0; i < getRandomInt(7, 15); i++) {
+		for (let i = 0; i < getRandomInt(10, 20); i++) {
 			const ballRadius = getRandomInt(20, 35);
 			this.balls[i] = new Ball(
 				getRandomInt(ballRadius, this.width),
@@ -24,9 +24,9 @@ export class Grid {
 			);
 		}
 
-		for (let x = 0; x < Math.round(this.width / this.cellSize); x++) {
+		for (let x = 0; x < Math.round(this.width / this.cellSize) + 1; x++) {
 			this.cells[x] = [];
-			for (let y = 0; y < Math.round(this.height / this.cellSize); y++) {
+			for (let y = 0; y < Math.round(this.height / this.cellSize) + 1; y++) {
 				this.cells[x][y] = 0;
 			}
 		}
@@ -45,7 +45,16 @@ export class Grid {
 			}
 		}
 
-		return { cells: this.cells, balls: this.balls, calcBegin: timestamp };
+		const states: number[][] = [];
+
+		for (let x = 0; x < this.cells.length - 1; x++) {
+			states[x] = [];
+			for (let y = 0; y < this.cells[x].length - 1; y++) {
+				states[x][y] = this.classifyCell([this.cells[x][y], this.cells[x + 1][y], this.cells[x + 1][y + 1], this.cells[x][y + 1]]);
+			}
+		}
+
+		return { cells: this.cells, balls: this.balls, calcBegin: timestamp, states };
 	};
 
 	calculateCellValue = (x: number, y: number): number => {
@@ -55,6 +64,15 @@ export class Grid {
 			value += ball.radius / distance;
 		});
 		return value;
+	};
+
+	classifyCell = (corners: number[]) => {
+		corners[0] = corners[0] >= 1 ? 1 : 0;
+		corners[1] = corners[1] >= 1 ? 1 : 0;
+		corners[2] = corners[2] >= 1 ? 1 : 0;
+		corners[3] = corners[3] >= 1 ? 1 : 0;
+
+		return corners[0] * 8 + corners[1] * 4 + corners[2] * 2 + corners[3];
 	};
 }
 

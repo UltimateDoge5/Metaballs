@@ -13,4 +13,5 @@ interface FrameData {
 	cells: number[][];
 	balls: Ball[];
 	calcBegin: number;
+	states: number[][];
 }
