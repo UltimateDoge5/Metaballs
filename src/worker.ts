@@ -17,5 +17,8 @@ self.onmessage = (message: MessageEvent<MessageData>) => {
 		case "resize":
 			gridInstance.resize(messageData.data.width, messageData.data.height);
 			break;
+		case "resolutionUpdate":
+			gridInstance.cellResolution = messageData.data.cellSize;
+			break;
 	}
 };

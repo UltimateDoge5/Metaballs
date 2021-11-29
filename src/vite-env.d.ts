@@ -2,7 +2,7 @@
 
 import { Ball } from "./classes/ball";
 
-type Events = "init" | "frameUpdate" | "resize";
+type Events = "init" | "frameUpdate" | "resize" | "resolutionUpdate";
 
 interface MessageData {
 	event: Events;

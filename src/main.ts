@@ -6,9 +6,8 @@ import gridWorker from "./worker?worker";
 const canvas = document.querySelector("canvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 const frames: number[] = [];
-const cellSize = 10;
 
-const settings = { window: false, showFPS: true, grid: false, balls: true, gridResolution: 10 };
+const settings = { showWindow: false, showFPS: true, showGrid: false, showBalls: true, gridResolution: 10, enableLerp: true, showStates: false };
 const settingsPanel = document.querySelector("#settings") as HTMLDivElement;
 
 canvas.width = window.innerWidth;
@@ -16,7 +15,7 @@ canvas.height = window.innerHeight;
 
 const workerInstance = new gridWorker();
 
-workerInstance.postMessage({ event: "init", data: { width: canvas.width, height: canvas.height, cellSize } });
+workerInstance.postMessage({ event: "init", data: { width: canvas.width, height: canvas.height, cellSize: settings.gridResolution } });
 
 workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 	const MessageData = message.data;
@@ -27,26 +26,17 @@ workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 			//Draw the grid
-			// ctx.strokeStyle = "rgb(0,0,0,0.25)";
+			if (settings.showGrid) {
+				ctx.strokeStyle = "rgb(0,0,0,0.25)";
 
-			// ctx.beginPath();
-			// for (let x = 0; x < updateData.cells.length; x++) {
-			// 	for (let y = 0; y < updateData.cells[x].length; y++) {
-			// 		ctx.rect(x * cellSize, y * cellSize, cellSize, cellSize);
-			// 	}
-			// }
-			// ctx.stroke();
-
-			//Draw corners of the cells
-			// for (let x = 0; x < updateData.cells.length; x++) {
-			// 	for (let y = 0; y < updateData.cells[x].length; y++) {
-			// 		ctx.fillStyle = updateData.cells[x][y] >= 1 ? "green" : "black";
-			// 		ctx.beginPath();
-
-			// 		ctx.arc(x * cellSize, y * cellSize, 5, 0, Math.PI * 2);
-			// 		ctx.fill();
-			// 	}
-			// }
+				ctx.beginPath();
+				for (let x = 0; x < updateData.cells.length; x++) {
+					for (let y = 0; y < updateData.cells[x].length; y++) {
+						ctx.rect(x * settings.gridResolution, y * settings.gridResolution, settings.gridResolution, settings.gridResolution);
+					}
+				}
+				ctx.stroke();
+			}
 
 			ctx.strokeStyle = "green";
 			ctx.beginPath();
@@ -59,17 +49,23 @@ workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 
 					const state = updateData.states[x][y];
 
-					// ctx.strokeText(state.toString(), x * cellSize + cellSize / 2, y * cellSize + cellSize / 2);
+					if (settings.showStates) {
+						ctx.strokeText(
+							state.toString(),
+							x * settings.gridResolution + settings.gridResolution / 2,
+							y * settings.gridResolution + settings.gridResolution / 2
+						);
+					}
 
 					const topLerp = lerp(updateData.cells[x][y], updateData.cells[x + 1][y], 0, 1);
 					const rightLerp = lerp(updateData.cells[x + 1][y], updateData.cells[x + 1][y + 1], 0, 1);
 					const bottomLerp = lerp(updateData.cells[x][y + 1], updateData.cells[x + 1][y + 1], 0, 1);
 					const leftLerp = lerp(updateData.cells[x][y], updateData.cells[x][y + 1], 0, 1);
 
-					const top = [(x + topLerp) * cellSize, y * cellSize];
-					const right = [(x + 1) * cellSize, (y + rightLerp) * cellSize];
-					const bottom = [(x + bottomLerp) * cellSize, (y + 1) * cellSize];
-					const left = [x * cellSize, (y + leftLerp) * cellSize];
+					const top = [(x + topLerp) * settings.gridResolution, y * settings.gridResolution];
+					const right = [(x + 1) * settings.gridResolution, (y + rightLerp) * settings.gridResolution];
+					const bottom = [(x + bottomLerp) * settings.gridResolution, (y + 1) * settings.gridResolution];
+					const left = [x * settings.gridResolution, (y + leftLerp) * settings.gridResolution];
 
 					switch (state) {
 						case 0:
@@ -129,13 +125,14 @@ workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 			ctx.stroke();
 
 			//Draw the balls
-			ctx.strokeStyle = "red";
-			updateData.balls.forEach((ball) => {
-				ctx.beginPath();
-				ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-				ctx.stroke();
-			});
-
+			if (settings.showBalls) {
+				ctx.strokeStyle = "red";
+				updateData.balls.forEach((ball) => {
+					ctx.beginPath();
+					ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+					ctx.stroke();
+				});
+			}
 			//Calculate FPS
 			while (frames.length > 0 && frames[0] <= updateData.calcBegin - 1000) {
 				frames.shift();
@@ -144,7 +141,7 @@ workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 			frames.push(updateData.calcBegin);
 
 			if (settings.showFPS) {
-				ctx.strokeText(`${frames.length} FPS`, settings.window ? canvas.width - 294 : canvas.width - 64, 10);
+				ctx.strokeText(`${frames.length} FPS`, settings.showWindow ? canvas.width - 294 : canvas.width - 64, 10);
 				ctx.stroke();
 			}
 			requestAnimationFrame(() => {
@@ -165,14 +162,50 @@ window.addEventListener("resize", () => {
 	workerInstance.postMessage({ event: "resize", data: { width: canvas.width, height: canvas.height } });
 });
 
-(document.querySelector("#toggleSettings") as HTMLButtonElement).addEventListener("click", (e) => {
-	settings.window = true;
+(document.querySelector("#toggleSettings") as HTMLButtonElement).addEventListener("click", () => {
+	settings.showWindow = true;
 	settingsPanel.classList.toggle("visible");
 	(document.querySelector("#toggleSettings") as HTMLButtonElement).style.display = "none";
 });
 
 (document.querySelector("#settings svg") as HTMLButtonElement).addEventListener("click", () => {
-	settings.window = false;
+	settings.showWindow = false;
 	settingsPanel.classList.toggle("visible");
 	(document.querySelector("#toggleSettings") as HTMLButtonElement).style.display = "block";
+});
+
+document.querySelectorAll<HTMLInputElement>("#settings input").forEach((input) => {
+	if (input.type === "range") {
+		input.addEventListener("input", () => {
+			(input.parentElement?.querySelector("span") as HTMLSpanElement).innerText = input.value;
+		});
+
+		input.addEventListener("change", () => {
+			settings.gridResolution = parseInt(input.value);
+			workerInstance.postMessage({ event: "resolutionUpdate", data: { cellSize: settings.gridResolution } });
+		});
+	} else if (input.type === "checkbox") {
+		input.addEventListener("change", () => {
+			switch (input.id as keyof typeof settings) {
+				case "showFPS":
+					settings.showFPS = input.checked;
+					break;
+				case "showGrid":
+					settings.showGrid = input.checked;
+					break;
+				case "showWindow":
+					settings.showWindow = input.checked;
+					break;
+				case "showBalls":
+					settings.showBalls = input.checked;
+					break;
+				case "enableLerp":
+					settings.enableLerp = input.checked;
+					break;
+				case "showStates":
+					settings.showStates = input.checked;
+					break;
+			}
+		});
+	}
 });
