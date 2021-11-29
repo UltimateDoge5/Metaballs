@@ -75,6 +75,17 @@ export class Grid {
 		return corners[0] * 8 + corners[1] * 4 + corners[2] * 2 + corners[3];
 	};
 
+	public set cellResolution(cellSize: number) {
+		this.cellSize = cellSize;
+
+		for (let x = 0; x < Math.round(this.width / this.cellSize) + 1; x++) {
+			this.cells[x] = [];
+			for (let y = 0; y < Math.round(this.height / this.cellSize) + 1; y++) {
+				this.cells[x][y] = 0;
+			}
+		}
+	}
+
 	resize(width: number, height: number) {
 		const diffX = width - this.width;
 		const diffY = height - this.height;

@@ -1,15 +1,18 @@
 import "./styles/style.css";
+import "./styles/slider.css";
 import { FrameData, MessageData } from "./vite-env";
+import gridWorker from "./worker?worker";
 
 const canvas = document.querySelector("canvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 const frames: number[] = [];
 const cellSize = 10;
 
+const settings = { window: false, showFPS: true, grid: false, balls: true, gridResolution: 10 };
+const settingsPanel = document.querySelector("#settings") as HTMLDivElement;
+
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
-
-import gridWorker from "./worker?worker";
 
 const workerInstance = new gridWorker();
 
@@ -140,9 +143,10 @@ workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 
 			frames.push(updateData.calcBegin);
 
-			ctx.strokeText(`${frames.length} FPS`, canvas.width - 36, 10);
-			ctx.stroke();
-
+			if (settings.showFPS) {
+				ctx.strokeText(`${frames.length} FPS`, settings.window ? canvas.width - 294 : canvas.width - 64, 10);
+				ctx.stroke();
+			}
 			requestAnimationFrame(() => {
 				workerInstance.postMessage({ event: "frameUpdate" });
 			});
@@ -159,4 +163,16 @@ window.addEventListener("resize", () => {
 	canvas.height = window.innerHeight;
 
 	workerInstance.postMessage({ event: "resize", data: { width: canvas.width, height: canvas.height } });
+});
+
+(document.querySelector("#toggleSettings") as HTMLButtonElement).addEventListener("click", (e) => {
+	settings.window = true;
+	settingsPanel.classList.toggle("visible");
+	(document.querySelector("#toggleSettings") as HTMLButtonElement).style.display = "none";
+});
+
+(document.querySelector("#settings svg") as HTMLButtonElement).addEventListener("click", () => {
+	settings.window = false;
+	settingsPanel.classList.toggle("visible");
+	(document.querySelector("#toggleSettings") as HTMLButtonElement).style.display = "block";
 });
