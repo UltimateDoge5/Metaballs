@@ -5,7 +5,7 @@ export class Grid {
 	height: number;
 	balls: Ball[];
 	cells: number[][] = [];
-	cellSize: number;
+	private cellSize: number;
 
 	constructor(width: number, height: number, cellSize: number) {
 		this.width = width;
@@ -79,6 +79,9 @@ export class Grid {
 		const diffX = width - this.width;
 		const diffY = height - this.height;
 
+		const diffXPercent = diffX / this.width;
+		const diffYPercent = diffY / this.height / 2;
+
 		this.width = width;
 		this.height = height;
 
@@ -90,15 +93,26 @@ export class Grid {
 		}
 
 		for (const ball of this.balls) {
+			ball.radius += diffXPercent * ball.radius;
+			ball.radius += diffYPercent * ball.radius;
+
 			ball.x += diffX;
 			ball.y += diffY;
 
 			if (ball.x < 0) {
-				ball.x = 0;
+				ball.x = 5 * ball.radius + ball.vX;
+				ball.vX = -ball.vX;
+			} else if (ball.x > this.width) {
+				ball.x = (this.width - 5) * ball.radius - ball.vX;
+				ball.vX = -ball.vX;
 			}
 
 			if (ball.y < 0) {
-				ball.y = 0;
+				ball.y = 5 * ball.radius + ball.vY;
+				ball.vY = -ball.vY;
+			} else if (ball.y > this.height) {
+				ball.y = (this.height - 5) * ball.radius - ball.vY;
+				ball.vY = -ball.vY;
 			}
 		}
 	}

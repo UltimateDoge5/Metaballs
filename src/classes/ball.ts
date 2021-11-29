@@ -2,8 +2,8 @@ export class Ball {
 	x: number;
 	y: number;
 	radius: number;
-	private vX: number;
-	private vY: number;
+	vX: number;
+	vY: number;
 
 	constructor(x: number, y: number, radius: number, vX: number, vY: number) {
 		this.x = x;
