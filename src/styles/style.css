@@ -76,3 +76,18 @@ body {
 #settings span:hover {
 	background-color: #303030;
 }
+
+footer {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	height: 32px;
+	width: 128px;
+	color: white;
+	text-align: center;
+	font-size: 12px;
+	padding: 4px;
+	display: flex;
+	align-items: center;
+	justify-content: space-evenly;
+}

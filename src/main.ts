@@ -41,6 +41,7 @@ workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 			}
 
 			ctx.strokeStyle = "green";
+
 			//Draw the cell states
 			if (settings.showStates) {
 				for (let x = 0; x < updateData.states.length; x++) {
@@ -75,6 +76,7 @@ workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 					ctx.stroke();
 				});
 			}
+
 			//Calculate FPS
 			while (frames.length > 0 && frames[0] <= updateData.calcBegin - 1000) {
 				frames.shift();
@@ -83,8 +85,8 @@ workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 			frames.push(updateData.calcBegin);
 
 			if (settings.showFPS) {
+				ctx.strokeStyle = "red";
 				ctx.strokeText(`${frames.length} FPS`, settings.showWindow ? canvas.width - 294 : canvas.width - 64, 10);
-				ctx.stroke();
 			}
 			requestAnimationFrame(() => {
 				workerInstance.postMessage({ event: "frameUpdate" });
@@ -92,6 +94,8 @@ workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 			break;
 	}
 };
+
+//I know it's lazy and dumb to separate this in two diffrent functions but I don't want to make it more complex
 
 //Render the isolines withouth lerp
 const renderIsolines = (states: number[][]) => {
