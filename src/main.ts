@@ -1,19 +1,34 @@
 import "./styles/style.css";
-import "./styles/slider.css";
-import { FrameData, MessageData } from "./vite-env";
-import gridWorker from "./worker?worker";
+
+import type { MessageData, FrameData } from "./types";
+import GUI from "lil-gui";
 
 const canvas = document.querySelector("canvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+const fps = document.querySelector("#fps") as HTMLSpanElement;
 const frames: number[] = [];
 
-const settings = { showWindow: false, showFPS: true, showGrid: false, showBalls: true, gridResolution: 10, enableLerp: true, showStates: false };
-const settingsPanel = document.querySelector("#settings") as HTMLDivElement;
+const settings = { showFPS: true, showBalls: true, gridResolution: 10, enableLerp: true, showStates: false };
+const gui = new GUI({ title: "Settings" });
+
+gui.add(settings, "showFPS")
+	.name("Show FPS")
+	.onChange((v: boolean) => (fps.style.display = v ? "block" : "none"));
+gui.add(settings, "showBalls").name("Show Balls");
+gui.add(settings, "showStates").name("Show States");
+gui.add(settings, "enableLerp").name("Enable Lerp");
+gui.add(settings, "gridResolution", 10, 100, 1)
+	.name("Grid Resolution")
+	.onChange((value: number) => {
+		workerInstance.postMessage({ event: "resolutionUpdate", data: { cellSize: value } });
+	});
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const workerInstance = new gridWorker();
+const workerInstance = new Worker(new URL("./worker.ts", import.meta.url), {
+	type: "module"
+});
 
 workerInstance.postMessage({ event: "init", data: { width: canvas.width, height: canvas.height, cellSize: settings.gridResolution } });
 
@@ -24,21 +39,6 @@ workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 		case "frameUpdate":
 			const updateData: FrameData = JSON.parse(MessageData.data);
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-			//Draw the grids
-			if (settings.showGrid) {
-				ctx.strokeStyle = "rgb(0,0,0,0.25)";
-				ctx.beginPath();
-				for (let x = 0; x < updateData.cells.length; x++) {
-					ctx.moveTo(x * settings.gridResolution, 0);
-					ctx.lineTo(x * settings.gridResolution, canvas.height);
-					for (let y = 0; y < updateData.cells[x].length; y++) {
-						ctx.moveTo(x * settings.gridResolution, y * settings.gridResolution);
-						ctx.lineTo(x * settings.gridResolution + settings.gridResolution, y * settings.gridResolution);
-					}
-				}
-				ctx.stroke();
-			}
 
 			ctx.strokeStyle = "green";
 
@@ -84,18 +84,12 @@ workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 
 			frames.push(updateData.calcBegin);
 
-			if (settings.showFPS) {
-				ctx.strokeStyle = "red";
-				ctx.strokeText(`${frames.length} FPS`, settings.showWindow ? canvas.width - 294 : canvas.width - 64, 10);
-			}
-			requestAnimationFrame(() => {
-				workerInstance.postMessage({ event: "frameUpdate" });
-			});
+			if (settings.showFPS) fps.textContent = `FPS: ${frames.length}`;
+
+			requestAnimationFrame(() => workerInstance.postMessage({ event: "frameUpdate" }));
 			break;
 	}
 };
-
-//I know it's lazy and dumb to separate this in two diffrent functions but I don't want to make it more complex
 
 //Render the isolines withouth lerp
 const renderIsolines = (states: number[][]) => {
@@ -249,52 +243,4 @@ window.addEventListener("resize", () => {
 	canvas.height = window.innerHeight;
 
 	workerInstance.postMessage({ event: "resize", data: { width: canvas.width, height: canvas.height } });
-});
-
-(document.querySelector("#toggleSettings") as HTMLButtonElement).addEventListener("click", () => {
-	settings.showWindow = true;
-	settingsPanel.classList.toggle("visible");
-	(document.querySelector("#toggleSettings") as HTMLButtonElement).style.display = "none";
-});
-
-(document.querySelector("#settings svg") as HTMLButtonElement).addEventListener("click", () => {
-	settings.showWindow = false;
-	settingsPanel.classList.toggle("visible");
-	(document.querySelector("#toggleSettings") as HTMLButtonElement).style.display = "block";
-});
-
-document.querySelectorAll<HTMLInputElement>("#settings input").forEach((input) => {
-	if (input.type === "range") {
-		input.addEventListener("input", () => {
-			(input.parentElement?.querySelector("span") as HTMLSpanElement).innerText = input.value;
-		});
-
-		input.addEventListener("change", () => {
-			settings.gridResolution = parseInt(input.value);
-			workerInstance.postMessage({ event: "resolutionUpdate", data: { cellSize: settings.gridResolution } });
-		});
-	} else if (input.type === "checkbox") {
-		input.addEventListener("change", () => {
-			switch (input.id as keyof typeof settings) {
-				case "showFPS":
-					settings.showFPS = input.checked;
-					break;
-				case "showGrid":
-					settings.showGrid = input.checked;
-					break;
-				case "showWindow":
-					settings.showWindow = input.checked;
-					break;
-				case "showBalls":
-					settings.showBalls = input.checked;
-					break;
-				case "enableLerp":
-					settings.enableLerp = input.checked;
-					break;
-				case "showStates":
-					settings.showStates = input.checked;
-					break;
-			}
-		});
-	}
 });

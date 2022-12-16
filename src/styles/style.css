@@ -7,74 +7,10 @@ body {
 	font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-#toggleSettings {
-	position: absolute;
-	top: 2px;
-	right: 2px;
-	fill: gray;
-	display: block;
-	cursor: pointer;
-}
-
-#settings {
-	position: absolute;
-	background-color: #303030ef;
-	top: 0;
-	right: -256px;
-	width: 256px;
-	min-height: 300px;
-	border-left: 2px solid red;
-	display: flex;
-	flex-direction: column;
-	align-items: left;
-	transition: right 0.3s;
-	box-sizing: border-box;
-	color: white;
-	text-align: left;
-	user-select: none;
-	padding: 8px 0px 16px 0px;
-}
-
-#settings.visible {
-	right: 0;
-}
-
-#settings > * {
-	padding-left: 16px;
-}
-
-#settings > div > span {
-	padding-left: 3px;
-	padding-bottom: 4px;
-}
-
-#settings svg {
-	stroke: white;
-	position: absolute;
-	top: 2px;
-	right: 2px;
-	cursor: pointer;
-}
-
-#settings h1 {
-	font-size: 32px;
-	margin: 0;
-}
-
-#settings h2 {
-	margin: 4px 0px;
-	font-size: 20px;
-}
-
-#settings div {
-	display: flex;
-	flex-direction: column;
-	align-items: left;
-}
-
-#settings label:hover,
-#settings span:hover {
-	background-color: #303030;
+#fps {
+	position: fixed;
+	top: 4px;
+	left: 4px;
 }
 
 footer {
@@ -90,4 +26,8 @@ footer {
 	display: flex;
 	align-items: center;
 	justify-content: space-evenly;
+}
+
+.lil-gui.autoPlace {
+	right: 0 !important;
 }

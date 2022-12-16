@@ -1,5 +1,5 @@
 import { Grid } from "./classes/grid";
-import { MessageData } from "./vite-env";
+import { MessageData } from "./types";
 
 let gridInstance: Grid;
 

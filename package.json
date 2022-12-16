@@ -1,13 +1,18 @@
 {
   "name": "metaballs",
   "version": "1.0.0",
+  "license": "MIT",
+  "author": "Piotr Kozak",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "serve": "vite preview"
   },
   "devDependencies": {
-    "typescript": "^4.3.2",
-    "vite": "^2.6.4"
+    "typescript": "^4.9.4",
+    "vite": "^4.0.1"
+  },
+  "dependencies": {
+    "lil-gui": "^0.17.0"
   }
 }
