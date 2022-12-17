@@ -5,6 +5,7 @@ export class Grid {
 	height: number;
 	balls: Ball[];
 	cells: number[][] = [];
+	private collisions = false;
 	private cellSize: number;
 
 	constructor(width: number, height: number, cellSize: number) {
@@ -36,7 +37,7 @@ export class Grid {
 		const timestamp = performance.now();
 
 		this.balls.forEach((ball) => {
-			ball.calculateNextPosition(this.width, this.height);
+			ball.calculateNextPosition(this.width, this.height, this.collisions, this.balls);
 		});
 
 		for (let x = 0; x < this.cells.length; x++) {
@@ -86,6 +87,24 @@ export class Grid {
 		}
 	}
 
+	public set collisionsEnabled(collisions: boolean) {
+		// Displace balls to prevent lockins if they are overlapping
+		if (collisions) {
+			for (let i = 0; i < this.balls.length; i++) {
+				for (let j = i + 1; j < this.balls.length; j++) {
+					const distance = Math.sqrt(Math.pow(this.balls[i].x - this.balls[j].x, 2) + Math.pow(this.balls[i].y - this.balls[j].y, 2));
+					if (distance < this.balls[i].radius + this.balls[j].radius) {
+						const angle = Math.atan2(this.balls[j].y - this.balls[i].y, this.balls[j].x - this.balls[i].x);
+						this.balls[i].x = this.balls[j].x - (this.balls[i].radius + this.balls[j].radius) * Math.cos(angle);
+						this.balls[i].y = this.balls[j].y - (this.balls[i].radius + this.balls[j].radius) * Math.sin(angle);
+					}
+				}
+			}
+		}
+
+		this.collisions = collisions;
+	}
+
 	resize(width: number, height: number) {
 		const diffX = width - this.width;
 		const diffY = height - this.height;
@@ -124,6 +143,32 @@ export class Grid {
 			} else if (ball.y > this.height) {
 				ball.y = (this.height - 5) * ball.radius - ball.vY;
 				ball.vY = -ball.vY;
+			}
+		}
+	}
+
+	// Reset the balls
+	reset() {
+		this.balls = [];
+
+		for (let i = 0; i < getRandomInt(10, 20); i++) {
+			const ballRadius = getRandomInt(20, 35);
+			this.balls[i] = new Ball(
+				getRandomInt(ballRadius, this.width),
+				getRandomInt(ballRadius, this.height),
+				ballRadius,
+				getRandomInt(1, 3) * (Math.random() > 0.5 ? 1 : -1),
+				getRandomInt(1, 3) * (Math.random() > 0.5 ? 1 : -1)
+			);
+
+			// Check if the ball is not overlapping with another ball
+			for (let j = 0; j < i; j++) {
+				const distance = Math.sqrt(Math.pow(this.balls[i].x - this.balls[j].x, 2) + Math.pow(this.balls[i].y - this.balls[j].y, 2));
+				if (distance < this.balls[i].radius + this.balls[j].radius) {
+					this.balls[i].x = getRandomInt(this.balls[i].radius, this.width);
+					this.balls[i].y = getRandomInt(this.balls[i].radius, this.height);
+					j = -1;
+				}
 			}
 		}
 	}

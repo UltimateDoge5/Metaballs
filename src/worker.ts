@@ -20,5 +20,11 @@ self.onmessage = (message: MessageEvent<MessageData>) => {
 		case "resolutionUpdate":
 			gridInstance.cellResolution = messageData.data.cellSize;
 			break;
+		case "collisionUpdate":
+			gridInstance.collisionsEnabled = messageData.data.collisions;
+			break;
+		case "reset":
+			gridInstance.reset();
+			break;
 	}
 };

@@ -8,20 +8,42 @@ const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 const fps = document.querySelector("#fps") as HTMLSpanElement;
 const frames: number[] = [];
 
-const settings = { showFPS: true, showBalls: true, gridResolution: 10, enableLerp: true, showStates: false };
+const settings = {
+	showFPS: true,
+	showBalls: true,
+	gridResolution: 10,
+	enableLerp: true,
+	showStates: false,
+	collisions: false,
+	fullscreen: async () => {
+		if (canvas.requestFullscreen) {
+			canvas.style.backgroundColor = "#fff";
+			await canvas.requestFullscreen();
+		}
+	}
+};
 const gui = new GUI({ title: "Settings" });
 
 gui.add(settings, "showFPS")
 	.name("Show FPS")
 	.onChange((v: boolean) => (fps.style.display = v ? "block" : "none"));
+
 gui.add(settings, "showBalls").name("Show Balls");
 gui.add(settings, "showStates").name("Show States");
 gui.add(settings, "enableLerp").name("Enable Lerp");
+gui.add(settings, "collisions")
+	.name("Enable collisions")
+	.onChange((v: boolean) => {
+		workerInstance.postMessage({ event: "collisionUpdate", data: { collisions: v } });
+	});
+
 gui.add(settings, "gridResolution", 10, 100, 1)
 	.name("Grid Resolution")
 	.onChange((value: number) => {
 		workerInstance.postMessage({ event: "resolutionUpdate", data: { cellSize: value } });
 	});
+
+gui.add(settings, "fullscreen").name("Go fullscreen");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -243,4 +265,14 @@ window.addEventListener("resize", () => {
 	canvas.height = window.innerHeight;
 
 	workerInstance.postMessage({ event: "resize", data: { width: canvas.width, height: canvas.height } });
+});
+
+window.addEventListener("keydown", (e) => {
+	if (e.key === "r") {
+		workerInstance.postMessage({ event: "reset" });
+	}
+
+	if (e.key === "f") {
+		settings.fullscreen();
+	}
 });

@@ -13,6 +13,12 @@ body {
 	left: 4px;
 }
 
+#tip {
+	position: fixed;
+	bottom: 4px;
+	left: 4px;
+}
+
 footer {
 	position: absolute;
 	bottom: 0;
