@@ -88,7 +88,7 @@ export class Grid {
 	}
 
 	public set collisionsEnabled(collisions: boolean) {
-		// Displace balls to prevent lockins if they are overlapping
+		// Displace balls to prevent lock-ins if they are overlapping
 		if (collisions) {
 			for (let i = 0; i < this.balls.length; i++) {
 				for (let j = i + 1; j < this.balls.length; j++) {

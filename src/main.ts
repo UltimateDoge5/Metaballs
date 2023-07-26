@@ -81,12 +81,7 @@ workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 
 			//Render the isolines
 			ctx.beginPath();
-			if (settings.enableLerp) {
-				renderIsolinesLerp(updateData.cells, updateData.states);
-			} else {
-				renderIsolines(updateData.states);
-			}
-
+			renderIsolines(updateData.cells,updateData.states, settings.enableLerp);
 			ctx.stroke();
 
 			//Draw the balls
@@ -113,16 +108,30 @@ workerInstance.onmessage = (message: MessageEvent<MessageData>) => {
 	}
 };
 
-//Render the isolines withouth lerp
-const renderIsolines = (states: number[][]) => {
+//Render the isolines without lerp
+const renderIsolines = (cells: number[][], states: number[][], lerpEnable: boolean) => {
 	for (let x = 0; x < states.length; x++) {
 		for (let y = 0; y < states[x].length; y++) {
 			const state = states[x][y];
 
-			const top = [x * settings.gridResolution + settings.gridResolution / 2, y * settings.gridResolution];
-			const right = [(x + 1) * settings.gridResolution, y * settings.gridResolution + settings.gridResolution / 2];
-			const bottom = [x * settings.gridResolution + settings.gridResolution / 2, (y + 1) * settings.gridResolution];
-			const left = [x * settings.gridResolution, y * settings.gridResolution + settings.gridResolution / 2];
+			let top: number[], right: number[], bottom: number[], left: number[];
+
+			if (lerpEnable) {
+				const topLerp = lerp(cells[x][y], cells[x + 1][y], 0, 1);
+				const rightLerp = lerp(cells[x + 1][y], cells[x + 1][y + 1], 0, 1);
+				const bottomLerp = lerp(cells[x][y + 1], cells[x + 1][y + 1], 0, 1);
+				const leftLerp = lerp(cells[x][y], cells[x][y + 1], 0, 1);
+
+				top = [(x + topLerp) * settings.gridResolution, y * settings.gridResolution];
+				right = [(x + 1) * settings.gridResolution, (y + rightLerp) * settings.gridResolution];
+				bottom = [(x + bottomLerp) * settings.gridResolution, (y + 1) * settings.gridResolution];
+				left = [x * settings.gridResolution, (y + leftLerp) * settings.gridResolution];
+			} else {
+				top = [x * settings.gridResolution + settings.gridResolution / 2, y * settings.gridResolution];
+				right = [(x + 1) * settings.gridResolution, y * settings.gridResolution + settings.gridResolution / 2];
+				bottom = [x * settings.gridResolution + settings.gridResolution / 2, (y + 1) * settings.gridResolution];
+				left = [x * settings.gridResolution, y * settings.gridResolution + settings.gridResolution / 2];
+			}
 
 			switch (state) {
 				case 0:
@@ -180,85 +189,9 @@ const renderIsolines = (states: number[][]) => {
 	}
 };
 
-//Render the isolines with lerp
-const renderIsolinesLerp = (cells: number[][], states: number[][]) => {
-	for (let x = 0; x < states.length; x++) {
-		for (let y = 0; y < states[x].length; y++) {
-			const lerp = (x0: number, x1: number, y0: number, y1: number) => {
-				return y0 + ((y1 - y0) * (1 - x0)) / (x1 - x0);
-			};
+const lerp = (x0: number, x1: number, y0: number, y1: number) => y0 + ((y1 - y0) * (1 - x0)) / (x1 - x0);
 
-			const state = states[x][y];
-
-			const topLerp = lerp(cells[x][y], cells[x + 1][y], 0, 1);
-			const rightLerp = lerp(cells[x + 1][y], cells[x + 1][y + 1], 0, 1);
-			const bottomLerp = lerp(cells[x][y + 1], cells[x + 1][y + 1], 0, 1);
-			const leftLerp = lerp(cells[x][y], cells[x][y + 1], 0, 1);
-
-			const top = [(x + topLerp) * settings.gridResolution, y * settings.gridResolution];
-			const right = [(x + 1) * settings.gridResolution, (y + rightLerp) * settings.gridResolution];
-			const bottom = [(x + bottomLerp) * settings.gridResolution, (y + 1) * settings.gridResolution];
-			const left = [x * settings.gridResolution, (y + leftLerp) * settings.gridResolution];
-
-			switch (state) {
-				case 0:
-				case 15:
-					break;
-				case 1:
-				case 14:
-					ctx.moveTo(left[0], left[1]);
-					ctx.lineTo(bottom[0], bottom[1]);
-					break;
-				case 2:
-				case 13:
-					ctx.moveTo(bottom[0], bottom[1]);
-					ctx.lineTo(right[0], right[1]);
-					break;
-				case 3:
-				case 12:
-					ctx.moveTo(left[0], left[1]);
-					ctx.lineTo(right[0], right[1]);
-					break;
-
-				case 4:
-				case 11:
-					ctx.moveTo(top[0], top[1]);
-					ctx.lineTo(right[0], right[1]);
-					break;
-				case 5:
-					//Left to top
-					ctx.moveTo(left[0], left[1]);
-					ctx.moveTo(top[0], top[1]);
-
-					//Bottom to right
-					ctx.moveTo(bottom[0], bottom[1]);
-					ctx.lineTo(right[0], right[1]);
-					break;
-				case 6:
-				case 9:
-					ctx.moveTo(top[0], top[1]);
-					ctx.lineTo(bottom[0], bottom[1]);
-					break;
-				case 7:
-				case 8:
-					ctx.moveTo(left[0], left[1]);
-					ctx.lineTo(top[0], top[1]);
-					break;
-				case 10:
-					ctx.moveTo(top[0], top[1]);
-					ctx.lineTo(right[0], right[1]);
-
-					ctx.moveTo(left[0], left[1]);
-					ctx.lineTo(bottom[0], bottom[1]);
-					break;
-			}
-		}
-	}
-};
-
-requestAnimationFrame(() => {
-	workerInstance.postMessage({ event: "frameUpdate" });
-});
+requestAnimationFrame(() =>	workerInstance.postMessage({ event: "frameUpdate" }));
 
 window.addEventListener("resize", () => {
 	canvas.width = window.innerWidth;
@@ -268,11 +201,6 @@ window.addEventListener("resize", () => {
 });
 
 window.addEventListener("keydown", (e) => {
-	if (e.key === "r") {
-		workerInstance.postMessage({ event: "reset" });
-	}
-
-	if (e.key === "f") {
-		settings.fullscreen();
-	}
+	if (e.key === "r") workerInstance.postMessage({ event: "reset" });
+	if (e.key === "f") void settings.fullscreen();
 });
